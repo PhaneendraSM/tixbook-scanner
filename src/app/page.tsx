@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Loader2, QrCode, Camera } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { ScanHistoryItem, VerificationResult } from "@/lib/types";
 import { findTicketById, useTicket } from "@/lib/tickets";
@@ -19,9 +19,13 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [verificationResult, setVerificationResult] = useState<VerificationResult | null>(null);
   const [scanHistory, setScanHistory] = useState<ScanHistoryItem[]>([]);
+  const [scannerKey, setScannerKey] = useState(0); // Add a key to force re-mounting
   const { toast } = useToast();
 
-  const handleScan = (scannedData: string) => {
+  const handleScan = (scannedData: string | null) => {
+    // Some versions of the library can return null, so we check for that.
+    if (!scannedData) return;
+
     console.log("--- SCAN DETECTED ---");
     console.log("Scanned Data:", scannedData);
 
@@ -76,26 +80,24 @@ export default function Home() {
       }
     }
     
-    // Use a short delay to allow the loading state to be visible
-    setTimeout(() => {
-        console.log("Verification Result:", result);
-        setVerificationResult(result);
+    console.log("Verification Result:", result);
+    setVerificationResult(result);
 
-        const historyItem: ScanHistoryItem = {
-          ...result,
-          ticketId: scannedData,
-          timestamp: new Date(),
-        };
-        setScanHistory((prevHistory) => [historyItem, ...prevHistory]);
+    const historyItem: ScanHistoryItem = {
+      ...result,
+      ticketId: scannedData,
+      timestamp: new Date(),
+    };
+    setScanHistory((prevHistory) => [historyItem, ...prevHistory]);
 
-        setIsLoading(false);
-        console.log("--- SCAN COMPLETE ---");
-    }, 500);
+    setIsLoading(false);
+    console.log("--- SCAN COMPLETE ---");
   };
 
   const handleReset = () => {
     console.log("Resetting scanner state...");
     setVerificationResult(null);
+    setScannerKey(prevKey => prevKey + 1); // Increment key to force re-mount
   };
   
   const handleScannerError = (error: Error) => {
@@ -115,7 +117,11 @@ export default function Home() {
           
           {/* Scanner View: Hidden when loading or showing a result */}
           <div className={cn("w-full text-center animate-in fade-in", { 'hidden': isLoading || verificationResult })}>
-            <TicketScanner onScan={handleScan} onError={handleScannerError} />
+            <TicketScanner 
+              key={scannerKey} 
+              onScan={handleScan} 
+              onError={handleScannerError} 
+            />
             <p className="text-muted-foreground mt-4">Point the camera at a QR code to scan it.</p>
              <Button variant="link" asChild className="mt-2">
                <Link href="/tickets">

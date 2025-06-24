@@ -13,6 +13,7 @@ export function TicketScanner({ onScan, onError }: TicketScannerProps) {
       <QrScanner
         onDecode={onScan}
         onError={onError}
+        scanDelay={100}
         containerStyle={{ width: "100%", height: "100%", paddingTop: '0' }}
         videoStyle={{ width: "100%", height: "100%", objectFit: 'cover' }}
       />
