@@ -1,6 +1,6 @@
 "use client";
 
-import { QrScanner } from "@yudiel/react-qr-scanner";
+import { Scanner } from "@yudiel/react-qr-scanner";
 
 type TicketScannerProps = {
   onScan: (result: string) => void;
@@ -10,7 +10,7 @@ type TicketScannerProps = {
 export function TicketScanner({ onScan, onError }: TicketScannerProps) {
   return (
     <div className="relative w-full aspect-square overflow-hidden rounded-2xl shadow-lg border-4 border-muted/50">
-      <QrScanner
+      <Scanner
         onDecode={onScan}
         onError={onError}
         containerStyle={{ width: "100%", height: "100%", paddingTop: '0' }}

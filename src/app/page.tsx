@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
-import { verifyTicket } from "@/app/actions";
 import { useToast } from "@/hooks/use-toast";
 import type { ScanHistoryItem, VerificationResult } from "@/lib/types";
+import { findTicketById, useTicket } from "@/lib/tickets";
 
 import { Header } from "@/components/header";
 import { TicketScanner } from "@/components/ticket-scanner";
@@ -22,33 +22,63 @@ export default function Home() {
 
     setIsLoading(true);
 
-    try {
-      const result = await verifyTicket(scannedData);
-      setVerificationResult(result);
+    // Mock backend logic directly on the client to bypass "use server" issue.
+    await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate network latency
 
-      // Add to history
-      const historyItem: ScanHistoryItem = {
-        ...result,
-        ticketId: scannedData,
-        timestamp: new Date(),
+    let result: VerificationResult;
+    const ticket = findTicketById(scannedData);
+
+    if (!ticket) {
+      result = {
+        status: 'invalid',
+        message: 'This ticket does not exist.',
       };
-      setScanHistory((prevHistory) => [historyItem, ...prevHistory]);
-
-    } catch (error) {
-      console.error(error);
-      const errorResult: VerificationResult = {
-        status: 'error',
-        message: 'Network error or server unavailable.',
+    } else if (ticket.isUsed) {
+      result = {
+        status: 'already_scanned',
+        message: 'This ticket has already been used.',
+        ticket: {
+          id: ticket.id,
+          eventName: ticket.eventName,
+          ticketType: ticket.ticketType,
+          ownerName: ticket.ownerName,
+          scannedAt: ticket.scannedAt,
+        },
+      };
+    } else {
+      const usedTicket = useTicket(scannedData);
+      if (usedTicket) {
+        result = {
+          status: 'valid',
+          message: 'Entry Allowed',
+          ticket: {
+            id: usedTicket.id,
+            eventName: usedTicket.eventName,
+            ticketType: usedTicket.ticketType,
+            ownerName: usedTicket.ownerName,
+            scannedAt: usedTicket.scannedAt,
+          },
+        };
+      } else {
+        // This case should not be reached with current logic, but as a fallback
+        result = {
+          status: 'error',
+          message: 'An unexpected error occurred during verification.'
+        }
       }
-      setVerificationResult(errorResult);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Could not connect to the verification server.",
-      });
-    } finally {
-      setIsLoading(false);
     }
+    
+    setVerificationResult(result);
+
+    // Add to history
+    const historyItem: ScanHistoryItem = {
+      ...result,
+      ticketId: scannedData,
+      timestamp: new Date(),
+    };
+    setScanHistory((prevHistory) => [historyItem, ...prevHistory]);
+
+    setIsLoading(false);
   };
 
   const handleReset = () => {
