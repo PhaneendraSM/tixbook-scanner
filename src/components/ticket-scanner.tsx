@@ -11,7 +11,7 @@ export function TicketScanner({ onScan, onError }: TicketScannerProps) {
   return (
     <div className="relative w-full aspect-square overflow-hidden rounded-2xl shadow-lg border-4 border-muted/50">
       <Scanner
-        onDecode={onScan}
+        onResult={(text) => onScan(text)}
         onError={onError}
         containerStyle={{ width: "100%", height: "100%", paddingTop: '0' }}
         videoStyle={{ width: "100%", height: "100%", objectFit: 'cover' }}
