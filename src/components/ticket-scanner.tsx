@@ -1,6 +1,6 @@
 "use client";
 
-import { Scanner } from "@yudiel/react-qr-scanner";
+import { Scanner, IResult } from "@yudiel/react-qr-scanner";
 
 type TicketScannerProps = {
   onScan: (result: string) => void;
@@ -11,7 +11,7 @@ export function TicketScanner({ onScan, onError }: TicketScannerProps) {
   return (
     <div className="relative w-full aspect-square overflow-hidden rounded-2xl shadow-lg border-4 border-muted/50">
       <Scanner
-        onResult={(text) => onScan(text)}
+        onResult={(result: IResult) => onScan(result.text)}
         onError={onError}
         containerStyle={{ width: "100%", height: "100%", paddingTop: '0' }}
         videoStyle={{ width: "100%", height: "100%", objectFit: 'cover' }}
