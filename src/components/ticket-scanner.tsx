@@ -1,3 +1,4 @@
+
 "use client";
 
 import { QrScanner } from "@yudiel/react-qr-scanner";
@@ -13,7 +14,10 @@ export function TicketScanner({ onScan, onError }: TicketScannerProps) {
       <QrScanner
         onDecode={onScan}
         onError={onError}
-        scanDelay={100}
+        scanDelay={300}
+        constraints={{
+            facingMode: 'environment'
+        }}
         containerStyle={{ width: "100%", height: "100%", paddingTop: '0' }}
         videoStyle={{ width: "100%", height: "100%", objectFit: 'cover' }}
       />
