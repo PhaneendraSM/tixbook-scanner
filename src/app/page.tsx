@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import Link from "next/link";
+import { Loader2, Ticket } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { ScanHistoryItem, VerificationResult } from "@/lib/types";
 import { findTicketById, useTicket } from "@/lib/tickets";
@@ -10,6 +11,7 @@ import { Header } from "@/components/header";
 import { TicketScanner } from "@/components/ticket-scanner";
 import { StatusDisplay } from "@/components/status-display";
 import { ScanHistory } from "@/components/scan-history";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
@@ -110,6 +112,12 @@ export default function Home() {
             <div className="flex flex-col items-center text-center gap-4 w-full">
                <TicketScanner onScan={handleScan} onError={handleScannerError} />
                <p className="text-muted-foreground mt-4">Point your camera at a ticket's QR code.</p>
+               <Button variant="link" asChild>
+                 <Link href="/tickets">
+                    <Ticket className="mr-2 h-4 w-4"/>
+                    Need a sample QR code?
+                 </Link>
+               </Button>
             </div>
           )}
         </div>
