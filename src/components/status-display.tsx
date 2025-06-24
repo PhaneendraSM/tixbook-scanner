@@ -16,30 +16,47 @@ const statusConfig = {
     icon: CheckCircle2,
     title: "Valid Ticket",
     cardClass: "bg-success/10 border-success text-success",
-    titleClass: "text-success-foreground"
   },
   already_scanned: {
     icon: History,
     title: "Already Scanned",
     cardClass: "bg-destructive/10 border-destructive text-destructive",
-    titleClass: "text-destructive-foreground"
   },
   invalid: {
     icon: XCircle,
     title: "Invalid Ticket",
     cardClass: "bg-destructive/10 border-destructive text-destructive",
-    titleClass: "text-destructive-foreground"
   },
   error: {
     icon: AlertTriangle,
     title: "Verification Error",
     cardClass: "bg-destructive/10 border-destructive text-destructive",
-    titleClass: "text-destructive-foreground"
   },
 };
 
 export function StatusDisplay({ result, onReset }: StatusDisplayProps) {
   const config = statusConfig[result.status];
+
+  if (!config) {
+    console.error("Invalid verification status received:", result.status);
+    return (
+        <div className="w-full max-w-md mx-auto animate-in fade-in zoom-in-95 duration-500">
+             <Card className="text-center bg-destructive/10 border-destructive text-destructive">
+                <CardHeader className="p-6">
+                    <div className="flex justify-center mb-4">
+                        <AlertTriangle className="w-20 h-20" />
+                    </div>
+                    <CardTitle className="text-3xl font-bold">Error</CardTitle>
+                    <CardDescription className="text-lg text-current">An unknown error occurred.</CardDescription>
+                </CardHeader>
+                <CardFooter className="flex justify-center p-6 pt-0">
+                    <Button onClick={onReset} size="lg" className="w-full">Scan Again</Button>
+                </CardFooter>
+            </Card>
+        </div>
+    );
+  }
+
   const Icon = config.icon;
 
   return (
@@ -49,8 +66,8 @@ export function StatusDisplay({ result, onReset }: StatusDisplayProps) {
           <div className="flex justify-center mb-4">
             <Icon className={cn("w-20 h-20")} />
           </div>
-          <CardTitle className={cn("text-3xl font-bold", result.status === 'valid' ? 'text-green-800' : 'text-red-800', 'dark:text-white')}>{config.title}</CardTitle>
-          <CardDescription className={cn("text-lg", result.status === 'valid' ? 'text-green-700' : 'text-red-700', 'dark:text-white/80')}>{result.message}</CardDescription>
+          <CardTitle className="text-3xl font-bold">{config.title}</CardTitle>
+          <CardDescription className="text-lg text-current">{result.message}</CardDescription>
         </CardHeader>
         {result.ticket && (
           <CardContent className="text-left space-y-2 p-6 pt-0 text-card-foreground">
