@@ -19,13 +19,10 @@ export default function Home() {
   const [scanHistory, setScanHistory] = useState<ScanHistoryItem[]>([]);
   const { toast } = useToast();
 
-  const handleScan = async (scannedData: string) => {
+  const handleScan = (scannedData: string) => {
     if (isLoading || verificationResult) return;
 
     setIsLoading(true);
-
-    // Mock backend logic directly on the client to bypass "use server" issue.
-    await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate network latency
 
     let result: VerificationResult;
     const ticket = findTicketById(scannedData);
