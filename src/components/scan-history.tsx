@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react";
 import { Check, X, History as HistoryIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +14,32 @@ const statusIcons = {
   already_scanned: { icon: HistoryIcon, className: "bg-destructive text-destructive-foreground" },
   error: { icon: X, className: "bg-destructive text-destructive-foreground" },
 };
+
+function ScanHistoryItemDisplay({ item }: { item: ScanHistoryItem }) {
+  const [time, setTime] = useState("");
+
+  useEffect(() => {
+    // This effect runs only on the client, after hydration, preventing a mismatch.
+    setTime(item.timestamp.toLocaleTimeString());
+  }, [item.timestamp]);
+
+  const IconConfig = statusIcons[item.status];
+  const Icon = IconConfig.icon;
+
+  return (
+    <div className="flex items-center gap-4">
+      <div className={cn("w-8 h-8 rounded-full flex items-center justify-center shrink-0", IconConfig.className)}>
+        <Icon className="w-5 h-5" />
+      </div>
+      <div className="flex-1 truncate">
+        <p className="font-semibold truncate">{item.ticketId}</p>
+        <p className="text-sm text-muted-foreground truncate">{item.message}</p>
+      </div>
+      <p className="text-xs text-muted-foreground whitespace-nowrap">{time || "..."}</p>
+    </div>
+  );
+}
+
 
 export function ScanHistory({ history }: { history: ScanHistoryItem[] }) {
   if (history.length === 0) {
@@ -31,25 +58,12 @@ export function ScanHistory({ history }: { history: ScanHistoryItem[] }) {
       <CardContent>
         <ScrollArea className="h-48">
           <div className="space-y-4 pr-4">
-            {history.map((item, index) => {
-              const IconConfig = statusIcons[item.status];
-              const Icon = IconConfig.icon;
-              return (
-                <div key={index}>
-                  <div className="flex items-center gap-4">
-                    <div className={cn("w-8 h-8 rounded-full flex items-center justify-center shrink-0", IconConfig.className)}>
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <div className="flex-1 truncate">
-                      <p className="font-semibold truncate">{item.ticketId}</p>
-                      <p className="text-sm text-muted-foreground truncate">{item.message}</p>
-                    </div>
-                    <p className="text-xs text-muted-foreground whitespace-nowrap">{item.timestamp.toLocaleTimeString()}</p>
-                  </div>
-                  {index < history.length - 1 && <Separator className="mt-4" />}
-                </div>
-              );
-            })}
+            {history.map((item, index) => (
+              <div key={index}>
+                <ScanHistoryItemDisplay item={item} />
+                {index < history.length - 1 && <Separator className="mt-4" />}
+              </div>
+            ))}
           </div>
         </ScrollArea>
       </CardContent>
