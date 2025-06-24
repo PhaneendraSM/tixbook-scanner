@@ -1,6 +1,6 @@
 "use client";
 
-import { Scanner, IResult } from "@yudiel/react-qr-scanner";
+import { Scanner, type IResult } from "@yudiel/react-qr-scanner";
 
 type TicketScannerProps = {
   onScan: (result: string) => void;
