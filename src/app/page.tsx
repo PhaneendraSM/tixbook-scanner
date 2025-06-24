@@ -22,19 +22,7 @@ export default function Home() {
   const [scannerKey, setScannerKey] = useState(0); // Add a key to force re-mounting
   const { toast } = useToast();
 
-  const handleScan = (scannedData: string | null) => {
-    // Some versions of the library can return null, so we check for that.
-    if (!scannedData) return;
-
-    console.log("--- SCAN DETECTED ---");
-    console.log("Scanned Data:", scannedData);
-
-    // This check is crucial to prevent the scanner from re-triggering while a result is shown
-    if (isLoading || verificationResult) {
-      console.log("Scan ignored: Already processing or showing a result.");
-      return;
-    }
-
+  const processScan = (scannedData: string) => {
     setIsLoading(true);
 
     let result: VerificationResult;
@@ -92,6 +80,23 @@ export default function Home() {
 
     setIsLoading(false);
     console.log("--- SCAN COMPLETE ---");
+  };
+
+  const handleScan = (scannedData: string | null) => {
+    // Some versions of the library can return null, so we check for that.
+    if (!scannedData) return;
+
+    console.log("--- SCAN DETECTED ---");
+    console.log("Scanned Data:", scannedData);
+
+    // This check is crucial to prevent the scanner from re-triggering while a result is shown
+    if (isLoading || verificationResult) {
+      console.log("Scan ignored: Already processing or showing a result.");
+      return;
+    }
+    
+    // Defer the processing to prevent race conditions with the scanner component
+    setTimeout(() => processScan(scannedData), 0);
   };
 
   const handleReset = () => {
