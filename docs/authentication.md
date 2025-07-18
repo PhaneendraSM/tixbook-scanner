@@ -16,7 +16,7 @@ The application now includes a complete authentication system with the following
 
 The authentication system is configured to work with the backend API at:
 ```
-http://13.233.125.221:3000
+https://apis.tixbook.com
 ```
 
 This URL is stored in the `.env.local` file as `NEXT_PUBLIC_API_BASE_URL`.
@@ -136,7 +136,7 @@ const response = await authAxios.get('/api/protected-endpoint');
 
 Create a `.env.local` file with:
 ```
-NEXT_PUBLIC_API_BASE_URL=http://13.233.125.221:3000
+NEXT_PUBLIC_API_BASE_URL=https://apis.tixbook.com
 ```
 
 ## Testing
