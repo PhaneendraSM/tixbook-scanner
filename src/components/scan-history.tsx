@@ -23,7 +23,7 @@ function ScanHistoryItemDisplay({ item }: { item: ScanHistoryItem }) {
     setTime(item.timestamp.toLocaleTimeString());
   }, [item.timestamp]);
 
-  const IconConfig = statusIcons[item.status];
+  const IconConfig = statusIcons[item.status] || statusIcons.error; // Fallback to error icon
   const Icon = IconConfig.icon;
 
   return (

@@ -81,6 +81,13 @@ export function StatusDisplay({ result, onReset }: StatusDisplayProps) {
             </div>
           </CardContent>
         )}
+        {result.bookingId && (
+          <CardContent className="text-left space-y-2 p-6 pt-0 text-card-foreground">
+            <div className="border-t pt-4 space-y-1">
+              <p><strong>Booking ID:</strong> {result.bookingId}</p>
+            </div>
+          </CardContent>
+        )}
         <CardFooter className="flex justify-center p-6 pt-0">
           <Button onClick={onReset} size="lg" className="w-full">Scan Next Ticket</Button>
         </CardFooter>

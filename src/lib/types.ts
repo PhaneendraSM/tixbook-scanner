@@ -12,6 +12,7 @@ export type VerificationStatus = 'valid' | 'invalid' | 'already_scanned' | 'erro
 export interface VerificationResult {
   status: VerificationStatus;
   message: string;
+  bookingId?: string;
   ticket?: Omit<Ticket, 'isUsed'>;
 }
 

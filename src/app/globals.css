@@ -90,3 +90,8 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.bg-primary {
+  background-color: #FF1493;
+  color: #fff;
+}
