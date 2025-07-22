@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import type { ScanHistoryItem, VerificationResult } from "@/lib/types";
+import type { ScanHistoryItem, VerificationResult, VerificationStatus } from "@/lib/types";
 import { cn, extractBookingId } from "@/lib/utils";
 import { createAuthAxios } from "@/lib/auth";
 import { Header } from "@/components/header";
@@ -25,36 +25,59 @@ export default function Home() {
   const processScan = useCallback(async (scannedData: string) => {
     setIsLoading(true);
 
-    try {
-      // Extract booking ID from QR code data
-      const bookingId = extractBookingId(scannedData);
+    // Extract booking ID from QR code data
+    const bookingId = extractBookingId(scannedData);
+    
+    if (!bookingId) {
+      const result: VerificationResult = {
+        status: 'invalid',
+        message: 'Invalid QR code format. Expected tixbook.com booking URL.',
+      };
       
-      if (!bookingId) {
-        const result: VerificationResult = {
-          status: 'invalid',
-          message: 'Invalid QR code format. Expected tixbook.com booking URL.',
-        };
-        
-        setVerificationResult(result);
-        const historyItem: ScanHistoryItem = {
-          ...result,
-          ticketId: scannedData,
-          timestamp: new Date(),
-        };
-        setScanHistory((prevHistory) => [historyItem, ...prevHistory]);
-        setIsLoading(false);
-        return;
-      }
+      setVerificationResult(result);
+      const historyItem: ScanHistoryItem = {
+        ...result,
+        ticketId: scannedData,
+        timestamp: new Date(),
+      };
+      setScanHistory((prevHistory) => [historyItem, ...prevHistory]);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
       // Call the API to validate the booking using authenticated axios instance
       const authAxios = createAuthAxios();
       const response = await authAxios.get(`/api/booking/validate/${bookingId}`);
       
       // Map the API response to our VerificationResult format
       const apiResult = response.data;
+      console.log("API Result:", apiResult);
+      
+      // Handle the API response status and messages appropriately
+      let status: VerificationStatus = 'valid';
+      let message = apiResult.message || 'Ticket validated successfully';
+      
+      // Check for the specific "QR code already validated" message
+      if (apiResult.message === 'QR code already validated.') {
+        status = 'already_scanned';
+        message = apiResult.message;
+      } else if (apiResult.status === 'already_scanned') {
+        status = 'already_scanned';
+        message = apiResult.message || 'This ticket has already been used.';
+      } else if (apiResult.status === 'invalid') {
+        status = 'invalid';
+        message = apiResult.message || 'This ticket is invalid.';
+      } else if (apiResult.status === 'error') {
+        status = 'error';
+        message = apiResult.message || 'An error occurred during verification.';
+      }
+      
       const result: VerificationResult = {
-        status: 'valid', // API returns success message, so status is valid
-        message: apiResult.message || 'Ticket validated successfully',
-        bookingId: apiResult.bookingId, // Store the booking ID for reference
+        status,
+        message,
+        bookingId: apiResult.bookingId || bookingId,
+        ticket: apiResult.ticket,
       };
       
       console.log("Verification Result:", result);
@@ -67,20 +90,42 @@ export default function Home() {
       };
       setScanHistory((prevHistory) => [historyItem, ...prevHistory]);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error validating booking:', error);
-      const result: VerificationResult = {
-        status: 'error',
-        message: 'Failed to validate ticket. Please try again.',
-      };
+      console.log('Error response:', error.response);
+      console.log('Error response data:', error.response?.data);
       
-      setVerificationResult(result);
-      const historyItem: ScanHistoryItem = {
-        ...result,
-        ticketId: scannedData,
-        timestamp: new Date(),
-      };
-      setScanHistory((prevHistory) => [historyItem, ...prevHistory]);
+      // Check if this is a 400 error with "QR code already validated" message
+      if (error.response?.status === 400 && error.response?.data?.message === 'QR code already validated.') {
+        const result: VerificationResult = {
+          status: 'already_scanned',
+          message: 'QR code already validated.',
+          bookingId: bookingId,
+        };
+        
+        console.log("Handling already validated QR code:", result);
+        setVerificationResult(result);
+        const historyItem: ScanHistoryItem = {
+          ...result,
+          ticketId: bookingId,
+          timestamp: new Date(),
+        };
+        setScanHistory((prevHistory) => [historyItem, ...prevHistory]);
+      } else {
+        // Handle other errors
+        const result: VerificationResult = {
+          status: 'error',
+          message: 'Failed to validate ticket. Please try again.',
+        };
+        
+        setVerificationResult(result);
+        const historyItem: ScanHistoryItem = {
+          ...result,
+          ticketId: scannedData,
+          timestamp: new Date(),
+        };
+        setScanHistory((prevHistory) => [historyItem, ...prevHistory]);
+      }
     }
 
     setIsLoading(false);

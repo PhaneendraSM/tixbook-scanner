@@ -97,7 +97,7 @@ export async function GET(
       message: booking.status === 'valid' 
         ? 'Entry Allowed' 
         : booking.status === 'already_scanned' 
-        ? 'This ticket has already been used.'
+        ? 'QR code already validated.'
         : 'This ticket is invalid.',
       ticket: {
         id: booking.id,

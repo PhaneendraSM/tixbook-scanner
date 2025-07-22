@@ -87,8 +87,23 @@ export function TicketScanner({ onScan, onError }: TicketScannerProps) {
         // Get available video devices
         const videoInputDevices = await readerRef.current.listVideoInputDevices();
         
+        // Log all device labels for debugging
+        console.log("Available video input devices:", videoInputDevices.map(d => ({ label: d.label, deviceId: d.deviceId })));
+        
         if (videoInputDevices.length === 0) {
           throw new Error("No camera devices found");
+        }
+
+        // Prefer back/environment camera if available
+        let selectedDevice = videoInputDevices[0];
+        for (const device of videoInputDevices) {
+          if (
+            device.label.toLowerCase().includes("back") ||
+            device.label.toLowerCase().includes("environment")
+          ) {
+            selectedDevice = device;
+            break;
+          }
         }
 
         // Ensure video element is visible and has dimensions before starting scanner
@@ -101,9 +116,9 @@ export function TicketScanner({ onScan, onError }: TicketScannerProps) {
         // Wait a bit for the video element to be properly rendered
         await new Promise(resolve => setTimeout(resolve, 100));
 
-        // Start scanning with the first available camera
+        // Start scanning with the selected camera
         await readerRef.current.decodeFromVideoDevice(
-          videoInputDevices[0].deviceId,
+          selectedDevice.deviceId,
           videoElement,
           (result, error) => {
             if (result) {
