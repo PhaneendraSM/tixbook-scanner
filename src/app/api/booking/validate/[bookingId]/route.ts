@@ -15,24 +15,24 @@ const getAuthTokenFromRequest = (request: NextRequest): string | null => {
 
 // Mock database of bookings - in a real app, this would be a database query
 const bookings = new Map([
-  ['686b52a51f85f2ba7bf56f36', {
-    id: '686b52a51f85f2ba7bf56f36',
+  ['fa3354d36a159b946bb2f0540c8dc34b', {
+    id: 'fa3354d36a159b946bb2f0540c8dc34b',
     eventName: 'Starlight Music Festival',
     ticketType: 'VIP Access',
     ownerName: 'Jane Doe',
     status: 'valid', // 'valid', 'invalid', 'already_scanned'
     scannedAt: null,
   }],
-  ['1234567890abcdef12345678', {
-    id: '1234567890abcdef12345678',
+  ['a1b2c3d4e5f6789012345678901234ab', {
+    id: 'a1b2c3d4e5f6789012345678901234ab',
     eventName: 'Tech Conference 2024',
     ticketType: 'Full Pass',
     ownerName: 'Alice Johnson',
     status: 'already_scanned',
     scannedAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // Scanned 2 hours ago
   }],
-  ['abcdef1234567890abcdef12', {
-    id: 'abcdef1234567890abcdef12',
+  ['cdef1234567890abcdef1234567890abcd', {
+    id: 'cdef1234567890abcdef1234567890abcd',
     eventName: 'Sports Championship',
     ticketType: 'General Admission',
     ownerName: 'John Smith',
@@ -65,16 +65,16 @@ export async function GET(
       );
     }
     
-    const { bookingId } = params;
+    const { bookingId: qrCodeToken } = params;
 
-    if (!bookingId) {
+    if (!qrCodeToken) {
       return NextResponse.json(
-        { error: 'Booking ID is required' },
+        { error: 'QR code token is required' },
         { status: 400 }
       );
     }
 
-    const booking = bookings.get(bookingId);
+    const booking = bookings.get(qrCodeToken);
 
     if (!booking) {
       return NextResponse.json(

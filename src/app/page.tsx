@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { ScanHistoryItem, VerificationResult, VerificationStatus } from "@/lib/types";
-import { cn, extractBookingId } from "@/lib/utils";
+import { cn, extractQrCodeToken } from "@/lib/utils";
 import { createAuthAxios } from "@/lib/auth";
 import { Header } from "@/components/header";
 import { TicketScanner } from "@/components/ticket-scanner";
@@ -25,13 +25,15 @@ export default function Home() {
   const processScan = useCallback(async (scannedData: string) => {
     setIsLoading(true);
 
-    // Extract booking ID from QR code data
-    const bookingId = extractBookingId(scannedData);
+    // Extract QR code token from QR code data
+    const qrCodeToken = extractQrCodeToken(scannedData);
+    console.log("Scanned data:", scannedData);
+    console.log("Extracted token:", qrCodeToken);
     
-    if (!bookingId) {
+    if (!qrCodeToken) {
       const result: VerificationResult = {
         status: 'invalid',
-        message: 'Invalid QR code format. Expected tixbook.com booking URL.',
+        message: 'Invalid QR code format. Expected QR code token.',
       };
       
       setVerificationResult(result);
@@ -46,9 +48,9 @@ export default function Home() {
     }
 
     try {
-      // Call the API to validate the booking using authenticated axios instance
+      // Call the API to validate the QR code token using authenticated axios instance
       const authAxios = createAuthAxios();
-      const response = await authAxios.get(`/api/booking/validate/${bookingId}`);
+      const response = await authAxios.get(`/api/booking/validate/${qrCodeToken}`);
       
       // Map the API response to our VerificationResult format
       const apiResult = response.data;
@@ -76,7 +78,7 @@ export default function Home() {
       const result: VerificationResult = {
         status,
         message,
-        bookingId: apiResult.bookingId || bookingId,
+        bookingId: apiResult.bookingId || qrCodeToken,
         ticket: apiResult.ticket,
       };
       
@@ -85,7 +87,7 @@ export default function Home() {
 
       const historyItem: ScanHistoryItem = {
         ...result,
-        ticketId: bookingId,
+        ticketId: qrCodeToken,
         timestamp: new Date(),
       };
       setScanHistory((prevHistory) => [historyItem, ...prevHistory]);
@@ -100,14 +102,14 @@ export default function Home() {
         const result: VerificationResult = {
           status: 'already_scanned',
           message: 'QR code already validated.',
-          bookingId: bookingId,
+          bookingId: qrCodeToken,
         };
         
         console.log("Handling already validated QR code:", result);
         setVerificationResult(result);
         const historyItem: ScanHistoryItem = {
           ...result,
-          ticketId: bookingId,
+          ticketId: qrCodeToken,
           timestamp: new Date(),
         };
         setScanHistory((prevHistory) => [historyItem, ...prevHistory]);
